@@ -1,20 +1,40 @@
-# E-Learning Platform Database
+# 🎓 E-Learning Platform Database
 
-Advanced Database Final Project - A complete MySQL database system for an online learning platform demonstrating advanced SQL skills and practical database optimization.
+[![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![License](https://img.shields.io/badge/License-Academic-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Complete-success.svg)]()
 
-## Project Overview
+> A comprehensive MySQL database system for an online learning platform, demonstrating advanced SQL techniques including stored procedures, user-defined functions, cursors, and query optimization.
 
-This project implements a database-centered system for an **Online Learning Platform** (similar to Coursera/Udemy) with the following features:
+## 📋 Table of Contents
 
-- Student enrollment and course management
-- Instructor and course tracking
-- Payment processing
-- Certificate generation
-- Performance analytics
+- [Overview](#-overview)
+- [Features](#-features)
+- [Database Schema](#-database-schema)
+- [Project Components](#-project-components)
+- [Installation](#-installation--setup)
+- [Usage Examples](#-usage-examples)
+- [Project Structure](#-project-structure)
+- [Requirements Checklist](#-requirements-checklist)
+- [License](#-license)
 
-## Database Schema
+## 🎯 Overview
 
-### Entity-Relationship Diagram
+This project implements a complete database system for an **Online Learning Platform** (similar to Coursera/Udemy). It serves as a demonstration of advanced database concepts and best practices in MySQL development.
+
+### 🌟 Features
+
+| Feature                   | Description                                              |
+| ------------------------- | -------------------------------------------------------- |
+| 👨‍🎓 **Student Management** | Track student enrollment, progress, and academic records |
+| 📚 **Course Catalog**     | Organize courses by category with instructor assignments |
+| 💳 **Payment Processing** | Handle transactions with multiple payment methods        |
+| 🏆 **Certification**      | Auto-generate certificates for completed courses         |
+| 📊 **Analytics**          | Performance metrics and revenue reporting                |
+
+## 🗄️ Database Schema
+
+### 📐 Entity-Relationship Diagram
 
 ```
 ┌─────────────┐       ┌─────────────┐       ┌─────────────┐
@@ -50,102 +70,108 @@ This project implements a database-centered system for an **Online Learning Plat
                                         └───────────────────
 ```
 
-### Tables (7 total)
+### 📊 Tables Overview
 
-| Table          | Description                               | Rows |
-| -------------- | ----------------------------------------- | ---- |
-| `instructors`  | Course instructors/teachers               | 5    |
-| `students`     | Enrolled students                         | 10   |
-| `courses`      | Available courses                         | 8    |
-| `modules`      | Course content modules                    | 15   |
-| `enrollments`  | Student-course enrollments                | 20   |
-| `payments`     | Payment transactions                      | 20   |
-| `certificates` | Issued certificates (populated by cursor) | 0\*  |
+| Table          | Description                       | Records |
+| :------------- | :-------------------------------- | :-----: |
+| `instructors`  | Course instructors and teachers   |    5    |
+| `students`     | Registered platform users         |   10    |
+| `courses`      | Available course catalog          |    8    |
+| `modules`      | Course content modules            |   15    |
+| `enrollments`  | Student-course enrollment records |   20    |
+| `payments`     | Payment transactions              |   20    |
+| `certificates` | Issued completion certificates    |   0\*   |
 
-**Total: 78 rows** (exceeds 30-row requirement)
+> **📈 Total Records:** 78 rows of sample data
 
-## Project Components
+---
 
-### Views (5 total)
+## 🔧 Project Components
 
-| View                         | Type                  | Purpose                                            |
-| ---------------------------- | --------------------- | -------------------------------------------------- |
-| `vw_course_enrollment_stats` | Aggregated (GROUP BY) | Enrollment count, avg grade, revenue per course    |
-| `vw_student_course_details`  | Join (4 tables)       | Student + enrollment + course + instructor details |
-| `vw_active_premium_students` | Filtered (WHERE)      | Active students in courses > ₱2,500                |
-| `vw_instructor_performance`  | Computed column       | Instructor earnings (70% of revenue)               |
-| `vw_monthly_revenue_report`  | Report-style          | Month-by-month revenue analysis                    |
+### 👁️ Views (5)
 
-### Stored Procedures (5 total)
+| View                         | Type       | Description                                               |
+| :--------------------------- | :--------- | :-------------------------------------------------------- |
+| `vw_course_enrollment_stats` | Aggregated | Enrollment counts, average grades, and revenue per course |
+| `vw_student_course_details`  | Multi-Join | Combines student, enrollment, course, and instructor data |
+| `vw_active_premium_students` | Filtered   | Active students enrolled in premium courses (>₱2,500)     |
+| `vw_instructor_performance`  | Computed   | Instructor earnings calculated at 70% revenue share       |
+| `vw_monthly_revenue_report`  | Report     | Month-by-month revenue breakdown and analysis             |
 
-| Procedure                   | Type            | Purpose                                                |
-| --------------------------- | --------------- | ------------------------------------------------------ |
-| `sp_enroll_student`         | INSERT          | Enroll student + create payment record                 |
-| `sp_update_grade`           | UPDATE          | Update grade, set progress=100%, auto-complete if ≥60  |
-| `sp_get_student_transcript` | Result Set      | Return student's complete academic record              |
-| `sp_search_courses`         | Optional Params | Search with optional category/price/difficulty filters |
-| `sp_unenroll_student`       | DELETE          | Unenroll student with optional refund                  |
+### ⚙️ Stored Procedures (5)
 
-### User-Defined Functions (5 total)
+| Procedure                   | Operation | Description                                                     |
+| :-------------------------- | :-------- | :-------------------------------------------------------------- |
+| `sp_enroll_student`         | INSERT    | Enrolls a student and creates corresponding payment record      |
+| `sp_update_grade`           | UPDATE    | Updates grade, sets progress to 100%, auto-completes if ≥60     |
+| `sp_get_student_transcript` | SELECT    | Returns complete academic record for a student                  |
+| `sp_search_courses`         | SELECT    | Advanced search with optional category/price/difficulty filters |
+| `sp_unenroll_student`       | DELETE    | Removes enrollment with optional refund processing              |
 
-| Function                               | Returns | Purpose                        |
-| -------------------------------------- | ------- | ------------------------------ |
-| `fn_letter_grade(score)`               | VARCHAR | Convert 0-100 to A+/A/A-/.../F |
-| `fn_course_completion_rate(course_id)` | DECIMAL | % of students who completed    |
-| `fn_student_gpa(student_id)`           | DECIMAL | Calculate GPA on 4.0 scale     |
-| `fn_instructor_revenue(instructor_id)` | DECIMAL | Total revenue from courses     |
-| `fn_days_since_enrollment(date)`       | INT     | Days elapsed since enrollment  |
+### 🔢 User-Defined Functions (5)
 
-### Cursor
+| Function                               | Returns | Description                                              |
+| :------------------------------------- | :------ | :------------------------------------------------------- |
+| `fn_letter_grade(score)`               | VARCHAR | Converts numeric score (0-100) to letter grade (A+ to F) |
+| `fn_course_completion_rate(course_id)` | DECIMAL | Calculates percentage of students who completed a course |
+| `fn_student_gpa(student_id)`           | DECIMAL | Computes student's GPA on a 4.0 scale                    |
+| `fn_instructor_revenue(instructor_id)` | DECIMAL | Calculates total revenue generated by an instructor      |
+| `fn_days_since_enrollment(date)`       | INT     | Returns days elapsed since enrollment date               |
 
-| Procedure                    | Purpose                                                |
-| ---------------------------- | ------------------------------------------------------ |
+### 🔄 Cursor Implementation
+
+| Procedure                    | Description                                            |
+| :--------------------------- | :----------------------------------------------------- |
 | `sp_award_bulk_certificates` | Bulk certificate generation with unique serial numbers |
 
-**Why cursor is required:**
+<details>
+<summary><strong>Why a cursor is required for this operation</strong></summary>
 
-1. Unique serial number generation per certificate (sequential)
-2. Per-record validation (student status, payment status)
-3. Denormalized data capture at time of issuance
-4. Audit trail logging per record
+1. **Sequential Processing** — Unique serial numbers must be generated sequentially
+2. **Per-Record Validation** — Each record requires individual status checks (student active, payment completed)
+3. **Denormalized Capture** — Student/course names captured at time of issuance for historical accuracy
+4. **Audit Trail** — Individual logging per certificate for compliance
 
-### Optimization
+</details>
 
-| Index                           | Target          | Improvement        |
-| ------------------------------- | --------------- | ------------------ |
-| `idx_course_category_published` | Course searches | ALL → ref          |
-| `idx_enrollment_course_grade`   | Grade queries   | Full scan → index  |
-| `idx_enrollment_student`        | Student lookups | Improved JOIN      |
-| `idx_payment_status_date`       | Revenue reports | Faster aggregation |
-| `idx_payment_enrollment`        | Payment lookups | Index lookup       |
-| `idx_module_course_order`       | Module listings | Ordered retrieval  |
+### ⚡ Index Optimization
 
-## File Structure
+| Index                           | Target          | Performance Improvement        |
+| :------------------------------ | :-------------- | :----------------------------- |
+| `idx_course_category_published` | Course searches | `ALL` → `ref` (index lookup)   |
+| `idx_enrollment_course_grade`   | Grade queries   | Full table scan → Index scan   |
+| `idx_enrollment_student`        | Student lookups | Faster JOIN operations         |
+| `idx_payment_status_date`       | Revenue reports | Optimized aggregation queries  |
+| `idx_payment_enrollment`        | Payment lookups | Direct index access            |
+| `idx_module_course_order`       | Module listings | Ordered retrieval without sort |
 
-```
-sql/
-├── 01_schema.sql        # DDL - CREATE TABLE statements
-├── 02_sample_data.sql   # DML - INSERT sample data
-├── 03_views.sql         # 5 view definitions
-├── 04_procedures.sql    # 5 stored procedures
-├── 05_functions.sql     # 5 user-defined functions
-├── 06_cursor.sql        # Cursor procedure
-└── 07_indexes.sql       # Optimization indexes + EXPLAIN
-```
+---
 
-## Installation & Setup
+## 🚀 Installation & Setup
 
 ### Prerequisites
 
-- MySQL 8.0+
-- MySQL Workbench (recommended)
+- **MySQL 8.0+** — [Download MySQL](https://dev.mysql.com/downloads/)
+- **MySQL Workbench** (recommended) — [Download Workbench](https://dev.mysql.com/downloads/workbench/)
 
-### Execution Order
+### Quick Start
 
-Run the SQL files in order:
+Run the SQL files in sequential order:
+
+```bash
+# Using MySQL command line
+mysql -u root -p < sql/01_schema.sql
+mysql -u root -p elearning_platform < sql/02_sample_data.sql
+mysql -u root -p elearning_platform < sql/03_views.sql
+mysql -u root -p elearning_platform < sql/04_procedures.sql
+mysql -u root -p elearning_platform < sql/05_functions.sql
+mysql -u root -p elearning_platform < sql/06_cursor.sql
+mysql -u root -p elearning_platform < sql/07_indexes.sql
+```
+
+**Or using MySQL Workbench:**
 
 ```sql
--- In MySQL Workbench or command line:
 SOURCE sql/01_schema.sql;
 SOURCE sql/02_sample_data.sql;
 SOURCE sql/03_views.sql;
@@ -155,103 +181,141 @@ SOURCE sql/06_cursor.sql;
 SOURCE sql/07_indexes.sql;
 ```
 
-Or run individually by opening each file in MySQL Workbench and executing.
+> **💡 Tip:** Open each file individually in MySQL Workbench and execute (⚡ or Ctrl+Shift+Enter).
 
-## Demo Queries
+---
 
-### Query Views
+## 📖 Usage Examples
+
+### Querying Views
 
 ```sql
--- Aggregated view
+-- Course statistics with enrollment data
 SELECT * FROM vw_course_enrollment_stats;
 
--- Join view for specific student
+-- Student details with enrolled courses
 SELECT * FROM vw_student_course_details WHERE student_id = 1;
 
--- Filtered view
+-- Premium course students
 SELECT * FROM vw_active_premium_students;
 
--- Computed column view
-SELECT instructor_name, instructor_earnings FROM vw_instructor_performance;
+-- Instructor performance metrics
+SELECT instructor_name, instructor_earnings
+FROM vw_instructor_performance;
 
--- Report view
-SELECT * FROM vw_monthly_revenue_report WHERE revenue_year = 2023;
+-- Monthly revenue breakdown
+SELECT * FROM vw_monthly_revenue_report
+WHERE revenue_year = 2024;
 ```
 
-### Execute Procedures
+### Calling Stored Procedures
 
 ```sql
--- Enroll a student
+-- Enroll student (student_id, course_id, payment_method)
 CALL sp_enroll_student(1, 5, 'credit_card');
 
--- Update a grade
+-- Update student grade (enrollment_id, new_grade)
 CALL sp_update_grade(1, 85.50);
 
--- Get student transcript
+-- Get complete transcript
 CALL sp_get_student_transcript(1);
 
--- Search courses (all optional params)
+-- Search courses with filters
 CALL sp_search_courses('Programming', NULL, 3000, NULL, NULL);
 
--- Unenroll with refund
+-- Unenroll with refund option
 CALL sp_unenroll_student(5, TRUE);
 ```
 
-### Use UDFs
+### Using Functions
 
 ```sql
--- Letter grade conversion
-SELECT grade, fn_letter_grade(grade) FROM enrollments WHERE grade IS NOT NULL;
+-- Convert numeric grades to letter grades
+SELECT grade, fn_letter_grade(grade) AS letter_grade
+FROM enrollments
+WHERE grade IS NOT NULL;
 
--- Student GPA
-SELECT student_id, fn_student_gpa(student_id) AS gpa FROM students;
+-- Calculate student GPAs
+SELECT student_id, fn_student_gpa(student_id) AS gpa
+FROM students;
 
--- Course completion rate
-SELECT course_id, title, fn_course_completion_rate(course_id) AS completion_rate
+-- Get course completion rates
+SELECT course_id, title,
+       fn_course_completion_rate(course_id) AS completion_rate
 FROM courses;
 
--- Instructor revenue
-SELECT instructor_id, fn_instructor_revenue(instructor_id) AS revenue
+-- Calculate instructor revenue
+SELECT instructor_id,
+       fn_instructor_revenue(instructor_id) AS total_revenue
 FROM instructors;
 ```
 
-### Trigger Cursor
+### Running the Cursor Procedure
 
 ```sql
--- Award certificates to eligible students
+-- Generate certificates for all eligible students
 CALL sp_award_bulk_certificates();
 
 -- View issued certificates
 SELECT * FROM certificates;
 ```
 
-### Show Optimization
+### Verifying Index Optimization
 
 ```sql
--- Before optimization (run before 07_indexes.sql)
+-- Check query execution plan (before adding indexes)
 EXPLAIN SELECT * FROM courses WHERE category = 'Programming';
 
--- After optimization (run after 07_indexes.sql)
-EXPLAIN SELECT * FROM courses WHERE category = 'Programming';
-
--- Compare 'type' column: ALL (before) vs ref (after)
+-- After running 07_indexes.sql, compare the 'type' column:
+-- Before: ALL (full table scan)
+-- After:  ref (index lookup)
 ```
 
-## Requirements Checklist
+---
 
-- [x] **Domain**: E-Learning Platform (not Sakila/World)
-- [x] **Schema**: 7 tables with PKs, FKs, constraints
-- [x] **Sample Data**: 78 rows (exceeds 30 requirement)
-- [x] **Views**: 5 views (aggregated, join, filtered, computed, report)
-- [x] **Stored Procedures**: 5 procedures (2 INSERT/UPDATE, 1 DELETE, 1 result set, 1 optional params)
-- [x] **UDFs**: 5 functions (used in SELECTs and views)
-- [x] **Cursor**: 1 cursor with justification comments
-- [x] **Optimization**: Indexes with EXPLAIN before/after
+## 📁 Project Structure
 
-## Authors
+```
+adv-database-final-project/
+│
+├── 📄 README.md              # Project documentation
+├── 📄 LICENSE                # License information
+│
+└── 📂 sql/
+    ├── 01_schema.sql         # Database and table definitions (DDL)
+    ├── 02_sample_data.sql    # Sample data insertion (DML)
+    ├── 03_views.sql          # View definitions
+    ├── 04_procedures.sql     # Stored procedures
+    ├── 05_functions.sql      # User-defined functions
+    ├── 06_cursor.sql         # Cursor implementation
+    └── 07_indexes.sql        # Index optimization + EXPLAIN analysis
+```
 
-Advanced Database Final Project
+---
 
-## License
+## ✅ Requirements Checklist
 
-Academic use only.
+| Requirement            | Status | Details                                                            |
+| :--------------------- | :----: | :----------------------------------------------------------------- |
+| Custom Domain          |   ✅   | E-Learning Platform (original design)                              |
+| Database Schema        |   ✅   | 7 tables with PKs, FKs, and constraints                            |
+| Sample Data            |   ✅   | 78 rows (exceeds 30-row minimum)                                   |
+| Views                  |   ✅   | 5 views (aggregated, join, filtered, computed, report)             |
+| Stored Procedures      |   ✅   | 5 procedures (INSERT, UPDATE, DELETE, result set, optional params) |
+| User-Defined Functions |   ✅   | 5 functions (used in SELECTs and views)                            |
+| Cursor                 |   ✅   | 1 cursor with detailed justification                               |
+| Optimization           |   ✅   | 6 indexes with EXPLAIN before/after comparison                     |
+
+---
+
+## 📄 License
+
+This project is for **academic use only** as part of the Advanced Database course final project.
+
+---
+
+<div align="center">
+
+**Built with ❤️ for Advanced Database Final Project**
+
+</div>
