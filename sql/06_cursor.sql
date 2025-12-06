@@ -74,10 +74,10 @@ BEGIN
     
     -- Processing variables
     DECLARE v_serial_number VARCHAR(50);
-    DECLARE v_sequence INT;
     DECLARE v_student_status VARCHAR(20);
     DECLARE v_payment_status VARCHAR(20);
     DECLARE v_done INT DEFAULT FALSE;
+    DECLARE v_passing_grade DECIMAL(5,2) DEFAULT 60.00;
     
     -- Counters for reporting
     DECLARE v_processed INT DEFAULT 0;
@@ -104,7 +104,7 @@ BEGIN
         INNER JOIN courses c ON e.course_id = c.course_id
         INNER JOIN instructors i ON c.instructor_id = i.instructor_id
         WHERE e.completed = TRUE
-          AND e.grade >= 60  -- Passing grade required
+          AND e.grade >= 60  -- Passing grade required (matches v_passing_grade)
           AND e.certificate_issued = FALSE;
     
     -- Handler for when cursor reaches end of result set
@@ -161,24 +161,16 @@ BEGIN
         
         -- ====================================================================
         -- GENERATE UNIQUE SERIAL NUMBER (Reason for cursor)
-        -- Must be done sequentially per row to ensure uniqueness
+        -- Using UUID-based generation to prevent race conditions
+        -- Format: CERT-YEAR-COURSEID-UUID (UUID ensures uniqueness)
         -- ====================================================================
         
-        -- Get current sequence for this course
-        SELECT COALESCE(MAX(
-            CAST(SUBSTRING_INDEX(serial_number, '-', -1) AS UNSIGNED)
-        ), 0) + 1
-        INTO v_sequence
-        FROM certificates
-        WHERE course_id = v_course_id;
-        
-        -- Generate serial number: CERT-YEAR-COURSEID-STUDENTID-SEQUENCE
+        -- Generate serial number with UUID to eliminate race condition
         SET v_serial_number = CONCAT(
             'CERT-',
             YEAR(NOW()), '-',
             LPAD(v_course_id, 3, '0'), '-',
-            LPAD(v_student_id, 4, '0'), '-',
-            LPAD(v_sequence, 4, '0')
+            LEFT(REPLACE(UUID(), '-', ''), 12)
         );
         
         -- ====================================================================

@@ -118,16 +118,24 @@ BEGIN
     DECLARE v_gpa DECIMAL(3,2);
     
     -- Calculate weighted GPA based on numeric grades
-    -- Converting percentage to 4.0 scale:
-    -- 90-100 = 4.0, 80-89 = 3.0, 70-79 = 2.0, 60-69 = 1.0, <60 = 0.0
+    -- Converting percentage to 4.0 scale with finer granularity (12+ tiers)
+    -- Matches standard US GPA scale: A+=4.0, A=4.0, A-=3.7, B+=3.3, etc.
     SELECT 
         SUM(
             CASE 
-                WHEN grade >= 90 THEN 4.0
-                WHEN grade >= 80 THEN 3.0
-                WHEN grade >= 70 THEN 2.0
-                WHEN grade >= 60 THEN 1.0
-                ELSE 0.0
+                WHEN grade >= 97 THEN 4.0   -- A+
+                WHEN grade >= 93 THEN 4.0   -- A
+                WHEN grade >= 90 THEN 3.7   -- A-
+                WHEN grade >= 87 THEN 3.3   -- B+
+                WHEN grade >= 83 THEN 3.0   -- B
+                WHEN grade >= 80 THEN 2.7   -- B-
+                WHEN grade >= 77 THEN 2.3   -- C+
+                WHEN grade >= 73 THEN 2.0   -- C
+                WHEN grade >= 70 THEN 1.7   -- C-
+                WHEN grade >= 67 THEN 1.3   -- D+
+                WHEN grade >= 63 THEN 1.0   -- D
+                WHEN grade >= 60 THEN 0.7   -- D-
+                ELSE 0.0                    -- F
             END
         ),
         COUNT(*)
@@ -189,7 +197,8 @@ DELIMITER //
 
 CREATE FUNCTION fn_days_since_enrollment(p_enroll_date DATE)
 RETURNS INT
-DETERMINISTIC
+NOT DETERMINISTIC
+READS SQL DATA
 BEGIN
     DECLARE v_days INT;
     

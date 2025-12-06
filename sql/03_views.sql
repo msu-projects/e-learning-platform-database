@@ -26,8 +26,8 @@ SELECT
     c.title AS course_title,
     c.category,
     c.price,
-    COUNT(e.enrollment_id) AS total_enrollments,
-    COUNT(CASE WHEN e.completed = TRUE THEN 1 END) AS completed_count,
+    COUNT(DISTINCT e.enrollment_id) AS total_enrollments,
+    COUNT(DISTINCT CASE WHEN e.completed = TRUE THEN e.enrollment_id END) AS completed_count,
     ROUND(AVG(e.grade), 2) AS average_grade,
     ROUND(AVG(e.progress_percent), 2) AS average_progress,
     SUM(CASE WHEN p.status = 'completed' THEN p.amount ELSE 0 END) AS total_revenue

@@ -109,24 +109,34 @@ CREATE PROCEDURE sp_update_grade(
     IN p_new_grade DECIMAL(5,2)
 )
 BEGIN
-    DECLARE v_enrollment_exists INT;
+    DECLARE v_enrollment_exists INT DEFAULT 0;
     DECLARE v_old_grade DECIMAL(5,2);
     DECLARE v_is_completed BOOLEAN;
+    DECLARE v_passing_grade DECIMAL(5,2) DEFAULT 60.00;
+    
+    -- Error handler for consistency
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SELECT 'ERROR: Grade update failed.' AS result;
+    END;
     
     -- Validate grade range
     IF p_new_grade < 0 OR p_new_grade > 100 THEN
         SELECT 'ERROR: Grade must be between 0 and 100.' AS result;
     ELSE
-        -- Check if enrollment exists
-        SELECT COUNT(*), grade INTO v_enrollment_exists, v_old_grade
-        FROM enrollments WHERE enrollment_id = p_enrollment_id
-        GROUP BY enrollment_id;
+        -- Check if enrollment exists (fixed: separate queries to avoid NULL issue)
+        SELECT COUNT(*) INTO v_enrollment_exists
+        FROM enrollments WHERE enrollment_id = p_enrollment_id;
         
         IF v_enrollment_exists = 0 THEN
             SELECT 'ERROR: Enrollment not found.' AS result;
         ELSE
+            -- Get old grade for reporting
+            SELECT grade INTO v_old_grade
+            FROM enrollments WHERE enrollment_id = p_enrollment_id;
+            
             -- Determine if course should be marked as completed
-            SET v_is_completed = (p_new_grade >= 60);
+            SET v_is_completed = (p_new_grade >= v_passing_grade);
             
             -- Update the grade
             UPDATE enrollments
@@ -176,6 +186,12 @@ BEGIN
     DECLARE v_total_courses INT;
     DECLARE v_completed_courses INT;
     DECLARE v_avg_grade DECIMAL(5,2);
+    
+    -- Error handler for consistency
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SELECT 'ERROR: Failed to retrieve transcript.' AS result;
+    END;
     
     -- Get student info
     SELECT CONCAT(first_name, ' ', last_name), email
@@ -353,7 +369,10 @@ BEGIN
                 WHERE payment_id = v_payment_id;
             END IF;
             
-            -- Delete the enrollment (cascade will not affect payments due to RESTRICT)
+            -- Delete payment record first (required due to FK RESTRICT constraint)
+            DELETE FROM payments WHERE enrollment_id = p_enrollment_id;
+            
+            -- Delete the enrollment
             DELETE FROM enrollments WHERE enrollment_id = p_enrollment_id;
             
             COMMIT;

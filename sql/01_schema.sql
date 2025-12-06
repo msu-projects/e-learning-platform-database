@@ -181,6 +181,7 @@ CREATE TABLE certificates (
     course_title VARCHAR(150) NOT NULL,
     student_name VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     -- Foreign Keys
     CONSTRAINT fk_certificate_enrollment 
