@@ -60,12 +60,14 @@ BEGIN
             SELECT COUNT(*) INTO v_already_enrolled
             FROM enrollments WHERE student_id = p_student_id AND course_id = p_course_id;
             
+            -- Start transaction early to prevent race conditions
+            -- The UNIQUE constraint on (student_id, course_id) will catch concurrent duplicates
+            START TRANSACTION;
+            
             IF v_already_enrolled > 0 THEN
+                ROLLBACK;
                 SELECT 'ERROR: Student is already enrolled in this course.' AS result;
             ELSE
-                -- Start transaction
-                START TRANSACTION;
-                
                 -- Create enrollment
                 INSERT INTO enrollments (student_id, course_id, enroll_date, progress_percent, completed)
                 VALUES (p_student_id, p_course_id, CURDATE(), 0.00, FALSE);
@@ -360,14 +362,10 @@ BEGIN
             -- Refund is only eligible if progress < 30%
             SET v_refund_eligible = (v_progress < 30);
             
-            START TRANSACTION;
+START TRANSACTION;
             
-            -- Process refund if requested and eligible
-            IF p_refund_requested AND v_refund_eligible AND v_payment_id IS NOT NULL THEN
-                UPDATE payments 
-                SET status = 'refunded'
-                WHERE payment_id = v_payment_id;
-            END IF;
+            -- Note: Refund status is tracked in the return message
+            -- Payment record is deleted as part of unenrollment (FK RESTRICT requires this)
             
             -- Delete payment record first (required due to FK RESTRICT constraint)
             DELETE FROM payments WHERE enrollment_id = p_enrollment_id;

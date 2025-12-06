@@ -81,7 +81,7 @@ This project implements a database-centered system for an **Online Learning Plat
 | Procedure                   | Type            | Purpose                                                |
 | --------------------------- | --------------- | ------------------------------------------------------ |
 | `sp_enroll_student`         | INSERT          | Enroll student + create payment record                 |
-| `sp_update_grade`           | UPDATE          | Update grade, auto-complete if ≥60                     |
+| `sp_update_grade`           | UPDATE          | Update grade, set progress=100%, auto-complete if ≥60  |
 | `sp_get_student_transcript` | Result Set      | Return student's complete academic record              |
 | `sp_search_courses`         | Optional Params | Search with optional category/price/difficulty filters |
 | `sp_unenroll_student`       | DELETE          | Unenroll student with optional refund                  |
